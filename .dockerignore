@@ -1,0 +1,6 @@
+backend/__pycache__/
+backend/chroma_db/
+.env
+*.pyc
+__pycache__/
+.git/

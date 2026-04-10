@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Amenify AI-powered customer support chatbot. Get instant answers about cleaning, handyman, chores, food delivery, and other lifestyle services.">
+    <title>Amenify Support Chat</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* ── Reset & Base ──────────────────────────────────────────── */
+        *, *::before, *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #f0f4f8;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 16px;
+            color: #1e293b;
+        }
+
+        /* ── Chat Container ────────────────────────────────────────── */
+        .chat-container {
+            width: 100%;
+            max-width: 680px;
+            height: 88vh;
+            background: #ffffff;
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08), 0 2px 8px rgba(0, 0, 0, 0.04);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* ── Header ────────────────────────────────────────────────── */
+        .chat-header {
+            background: #2563eb;
+            padding: 18px 24px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            flex-shrink: 0;
+        }
+
+        .header-avatar {
+            width: 44px;
+            height: 44px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+        }
+
+        .header-info {
+            flex: 1;
+        }
+
+        .header-title {
+            color: #ffffff;
+            font-size: 17px;
+            font-weight: 600;
+            letter-spacing: -0.01em;
+        }
+
+        .header-status {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-top: 3px;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background: #22c55e;
+            border-radius: 50%;
+            animation: pulse-dot 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse-dot {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .status-text {
+            color: rgba(255, 255, 255, 0.85);
+            font-size: 13px;
+            font-weight: 400;
+        }
+
+        .clear-btn {
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            color: #ffffff;
+            padding: 8px 14px;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: inherit;
+        }
+
+        .clear-btn:hover {
+            background: rgba(255, 255, 255, 0.25);
+            border-color: rgba(255, 255, 255, 0.4);
+        }
+
+        /* ── Messages Area ─────────────────────────────────────────── */
+        .messages-area {
+            flex: 1;
+            overflow-y: auto;
+            padding: 24px 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            scroll-behavior: smooth;
+        }
+
+        /* Custom scrollbar */
+        .messages-area::-webkit-scrollbar {
+            width: 5px;
+        }
+
+        .messages-area::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .messages-area::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 10px;
+        }
+
+        .messages-area::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+
+        /* ── Message Bubbles ───────────────────────────────────────── */
+        .message {
+            display: flex;
+            gap: 10px;
+            max-width: 85%;
+            animation: messageIn 0.3s ease-out;
+        }
+
+        @keyframes messageIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message.user {
+            align-self: flex-end;
+            flex-direction: row-reverse;
+        }
+
+        .message.bot {
+            align-self: flex-start;
+        }
+
+        .message-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 15px;
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+
+        .message.bot .message-avatar {
+            background: #eff6ff;
+        }
+
+        .message.user .message-avatar {
+            background: #e0e7ff;
+        }
+
+        .bubble {
+            padding: 12px 16px;
+            line-height: 1.55;
+            font-size: 14.5px;
+            word-wrap: break-word;
+            white-space: pre-wrap;
+        }
+
+        .message.user .bubble {
+            background: #2563eb;
+            color: #ffffff;
+            border-radius: 18px 18px 4px 18px;
+        }
+
+        .message.bot .bubble {
+            background: #ffffff;
+            color: #1e293b;
+            border: 1px solid #e2e8f0;
+            border-radius: 18px 18px 18px 4px;
+        }
+
+        .bubble strong {
+            font-weight: 600;
+        }
+
+        .bubble ul, .bubble ol {
+            margin: 6px 0;
+            padding-left: 20px;
+        }
+
+        .bubble li {
+            margin-bottom: 3px;
+        }
+
+        .bubble a {
+            color: #2563eb;
+            text-decoration: underline;
+        }
+
+        .message.user .bubble a {
+            color: #bfdbfe;
+        }
+
+        .bubble p {
+            margin-bottom: 8px;
+        }
+
+        .bubble p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* ── Typing Indicator ──────────────────────────────────────── */
+        .typing-indicator {
+            display: none;
+            align-self: flex-start;
+            gap: 10px;
+            max-width: 85%;
+            animation: messageIn 0.3s ease-out;
+        }
+
+        .typing-indicator.visible {
+            display: flex;
+        }
+
+        .typing-bubble {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 18px 18px 18px 4px;
+            padding: 14px 20px;
+            display: flex;
+            gap: 5px;
+            align-items: center;
+        }
+
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            background: #94a3b8;
+            border-radius: 50%;
+            animation: bounce 1.4s ease-in-out infinite;
+        }
+
+        .typing-dot:nth-child(2) {
+            animation-delay: 0.15s;
+        }
+
+        .typing-dot:nth-child(3) {
+            animation-delay: 0.3s;
+        }
+
+        @keyframes bounce {
+            0%, 60%, 100% {
+                transform: translateY(0);
+            }
+            30% {
+                transform: translateY(-8px);
+            }
+        }
+
+        /* ── Quick Reply Chips ─────────────────────────────────────── */
+        .quick-replies {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            padding: 0 20px 16px;
+            animation: messageIn 0.4s ease-out;
+        }
+
+        .quick-replies.hidden {
+            display: none;
+        }
+
+        .chip {
+            background: #eff6ff;
+            color: #2563eb;
+            border: 1px solid #bfdbfe;
+            padding: 9px 16px;
+            border-radius: 100px;
+            font-size: 13.5px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: inherit;
+            line-height: 1.3;
+        }
+
+        .chip:hover {
+            background: #2563eb;
+            color: #ffffff;
+            border-color: #2563eb;
+        }
+
+        /* ── Input Bar ─────────────────────────────────────────────── */
+        .input-bar {
+            padding: 16px 20px;
+            border-top: 1px solid #e2e8f0;
+            display: flex;
+            align-items: flex-end;
+            gap: 10px;
+            flex-shrink: 0;
+            background: #ffffff;
+        }
+
+        .input-bar textarea {
+            flex: 1;
+            border: 1px solid #e2e8f0;
+            border-radius: 14px;
+            padding: 12px 16px;
+            font-size: 14.5px;
+            font-family: inherit;
+            resize: none;
+            outline: none;
+            line-height: 1.5;
+            max-height: 120px;
+            min-height: 44px;
+            transition: border-color 0.2s ease;
+            color: #1e293b;
+            background: #f8fafc;
+        }
+
+        .input-bar textarea::placeholder {
+            color: #94a3b8;
+        }
+
+        .input-bar textarea:focus {
+            border-color: #2563eb;
+            background: #ffffff;
+        }
+
+        .send-btn {
+            width: 44px;
+            height: 44px;
+            background: #2563eb;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            flex-shrink: 0;
+        }
+
+        .send-btn:hover {
+            background: #1d4ed8;
+            transform: scale(1.04);
+        }
+
+        .send-btn:active {
+            transform: scale(0.96);
+        }
+
+        .send-btn:disabled {
+            background: #93c5fd;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .send-btn svg {
+            width: 20px;
+            height: 20px;
+            fill: #ffffff;
+        }
+
+        /* ── Responsive ────────────────────────────────────────────── */
+        @media (max-width: 520px) {
+            body {
+                padding: 0;
+            }
+
+            .chat-container {
+                height: 100vh;
+                border-radius: 0;
+                max-width: 100%;
+            }
+
+            .messages-area {
+                padding: 16px 14px;
+            }
+
+            .message {
+                max-width: 90%;
+            }
+
+            .quick-replies {
+                padding: 0 14px 12px;
+            }
+
+            .input-bar {
+                padding: 12px 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="chat-container">
+    <!-- Header -->
+    <div class="chat-header">
+        <div class="header-avatar">🏠</div>
+        <div class="header-info">
+            <div class="header-title">Amenify Support</div>
+            <div class="header-status">
+                <div class="status-dot"></div>
+                <span class="status-text">Online</span>
+            </div>
+        </div>
+        <button class="clear-btn" id="clearBtn" onclick="clearChat()">Clear Chat</button>
+    </div>
+
+    <!-- Messages -->
+    <div class="messages-area" id="messagesArea">
+        <!-- Welcome message -->
+        <div class="message bot">
+            <div class="message-avatar">🏠</div>
+            <div class="bubble">Hi there! 👋 I'm Amenify's support assistant. I can help you with questions about our services — cleaning, handyman, chores, food delivery, and more. How can I help you today?</div>
+        </div>
+    </div>
+
+    <!-- Quick Reply Chips -->
+    <div class="quick-replies" id="quickReplies">
+        <button class="chip" onclick="sendQuickReply(this)">What services does Amenify offer?</button>
+        <button class="chip" onclick="sendQuickReply(this)">How do I book a cleaning?</button>
+        <button class="chip" onclick="sendQuickReply(this)">Are cleaners background-checked?</button>
+        <button class="chip" onclick="sendQuickReply(this)">How do monthly credits work?</button>
+    </div>
+
+    <!-- Typing Indicator -->
+    <div class="typing-indicator" id="typingIndicator">
+        <div class="message-avatar">🏠</div>
+        <div class="typing-bubble">
+            <div class="typing-dot"></div>
+            <div class="typing-dot"></div>
+            <div class="typing-dot"></div>
+        </div>
+    </div>
+
+    <!-- Input Bar -->
+    <div class="input-bar">
+        <textarea
+            id="messageInput"
+            placeholder="Ask about Amenify services..."
+            rows="1"
+            onkeydown="handleKeyDown(event)"
+            oninput="autoResize(this)"
+        ></textarea>
+        <button class="send-btn" id="sendBtn" onclick="sendMessage()" aria-label="Send message">
+            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+            </svg>
+        </button>
+    </div>
+</div>
+
+<script>
+    // ── Configuration ────────────────────────────────────────────────
+    const API_BASE = window.location.origin;
+    let sessionId = null;
+    let isWaiting = false;
+
+    // ── Initialize session on page load ──────────────────────────────
+    async function initSession() {
+        try {
+            const res = await fetch(`${API_BASE}/api/session`, { method: 'POST' });
+            const data = await res.json();
+            sessionId = data.session_id;
+        } catch (err) {
+            console.error('Failed to create session:', err);
+            // Generate a local session ID as fallback
+            sessionId = crypto.randomUUID();
+        }
+    }
+
+    // ── Send message ─────────────────────────────────────────────────
+    async function sendMessage() {
+        const input = document.getElementById('messageInput');
+        const text = input.value.trim();
+        if (!text || isWaiting) return;
+
+        // Hide quick replies after first message
+        document.getElementById('quickReplies').classList.add('hidden');
+
+        // Add user message to UI
+        addMessage(text, 'user');
+        input.value = '';
+        autoResize(input);
+
+        // Show typing indicator
+        setTyping(true);
+        isWaiting = true;
+        document.getElementById('sendBtn').disabled = true;
+
+        try {
+            const res = await fetch(`${API_BASE}/api/chat`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    message: text,
+                    session_id: sessionId,
+                }),
+            });
+
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+            const data = await res.json();
+            setTyping(false);
+            addMessage(data.response, 'bot');
+
+        } catch (err) {
+            console.error('Chat error:', err);
+            setTyping(false);
+            addMessage("Sorry, I'm having trouble connecting right now. Please try again in a moment.", 'bot');
+        } finally {
+            isWaiting = false;
+            document.getElementById('sendBtn').disabled = false;
+            input.focus();
+        }
+    }
+
+    // ── Quick reply handler ──────────────────────────────────────────
+    function sendQuickReply(btn) {
+        document.getElementById('messageInput').value = btn.textContent;
+        sendMessage();
+    }
+
+    // ── Add message bubble to the UI ─────────────────────────────────
+    function addMessage(text, sender) {
+        const area = document.getElementById('messagesArea');
+        const wrapper = document.createElement('div');
+        wrapper.className = `message ${sender}`;
+
+        const avatar = document.createElement('div');
+        avatar.className = 'message-avatar';
+        avatar.textContent = sender === 'bot' ? '🏠' : '👤';
+
+        const bubble = document.createElement('div');
+        bubble.className = 'bubble';
+        bubble.innerHTML = formatMessage(text);
+
+        wrapper.appendChild(avatar);
+        wrapper.appendChild(bubble);
+        area.appendChild(wrapper);
+
+        // Scroll to bottom
+        requestAnimationFrame(() => {
+            area.scrollTop = area.scrollHeight;
+        });
+    }
+
+    // ── Format bot message (basic markdown) ──────────────────────────
+    function formatMessage(text) {
+        // Escape HTML first
+        let html = text
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;');
+
+        // Bold: **text**
+        html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+
+        // Bullet lists: lines starting with - or •
+        html = html.replace(/^[\-•]\s+(.+)$/gm, '<li>$1</li>');
+        html = html.replace(/((?:<li>.*<\/li>\n?)+)/g, '<ul>$1</ul>');
+
+        // Numbered lists: lines starting with 1. 2. etc.
+        html = html.replace(/^\d+\.\s+(.+)$/gm, '<li>$1</li>');
+
+        // Links: [text](url)
+        html = html.replace(/\[(.+?)\]\((.+?)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
+
+        // Email addresses
+        html = html.replace(/([\w.-]+@[\w.-]+\.\w+)/g, '<a href="mailto:$1">$1</a>');
+
+        // Paragraphs: double newlines
+        html = html.replace(/\n\n/g, '</p><p>');
+
+        // Single newlines within paragraphs
+        html = html.replace(/\n/g, '<br>');
+
+        // Wrap in paragraph
+        html = `<p>${html}</p>`;
+
+        // Clean up empty paragraphs
+        html = html.replace(/<p>\s*<\/p>/g, '');
+
+        return html;
+    }
+
+    // ── Typing indicator ─────────────────────────────────────────────
+    function setTyping(visible) {
+        const indicator = document.getElementById('typingIndicator');
+        if (visible) {
+            indicator.classList.add('visible');
+            // Move indicator to end of messages area
+            const area = document.getElementById('messagesArea');
+            area.appendChild(indicator);
+            area.scrollTop = area.scrollHeight;
+        } else {
+            indicator.classList.remove('visible');
+        }
+    }
+
+    // ── Clear chat ───────────────────────────────────────────────────
+    async function clearChat() {
+        const area = document.getElementById('messagesArea');
+        area.innerHTML = '';
+
+        // Add welcome message back
+        addMessage("Hi there! 👋 I'm Amenify's support assistant. I can help you with questions about our services — cleaning, handyman, chores, food delivery, and more. How can I help you today?", 'bot');
+
+        // Show quick replies again
+        document.getElementById('quickReplies').classList.remove('hidden');
+
+        // Clear server session
+        if (sessionId) {
+            try {
+                await fetch(`${API_BASE}/api/session/${sessionId}`, { method: 'DELETE' });
+            } catch (err) {
+                console.error('Failed to clear session:', err);
+            }
+        }
+
+        // Create a new session
+        await initSession();
+    }
+
+    // ── Auto-resize textarea ─────────────────────────────────────────
+    function autoResize(el) {
+        el.style.height = 'auto';
+        el.style.height = Math.min(el.scrollHeight, 120) + 'px';
+    }
+
+    // ── Keyboard handling ────────────────────────────────────────────
+    function handleKeyDown(e) {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            sendMessage();
+        }
+    }
+
+    // ── Init ─────────────────────────────────────────────────────────
+    window.addEventListener('DOMContentLoaded', () => {
+        initSession();
+        document.getElementById('messageInput').focus();
+    });
+</script>
+
+</body>
+</html>
