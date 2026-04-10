@@ -638,6 +638,13 @@
     // ── Clear chat ───────────────────────────────────────────────────
     async function clearChat() {
         const area = document.getElementById('messagesArea');
+        
+        // Safely extract the typing indicator before clearing the chat
+        const indicator = document.getElementById('typingIndicator');
+        if (indicator && indicator.parentNode === area) {
+            document.querySelector('.chat-container').insertBefore(indicator, document.querySelector('.input-bar'));
+        }
+        
         area.innerHTML = '';
 
         // Add welcome message back
